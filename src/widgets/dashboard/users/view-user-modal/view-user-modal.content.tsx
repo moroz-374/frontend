@@ -1,13 +1,13 @@
-import { Button, em, Group, Menu, px, Stack } from '@mantine/core'
-import { UpdateUserCommand } from '@remnawave/backend-contract'
-import { zodResolver } from 'mantine-form-zod-resolver'
-import { PiFloppyDiskDuotone } from 'react-icons/pi'
-import { useMediaQuery } from '@mantine/hooks'
-import { useTranslation } from 'react-i18next'
-import { TbDots } from 'react-icons/tb'
-import { useForm } from '@mantine/form'
-import { motion } from 'motion/react'
-import { useEffect } from 'react'
+import {Button, Card, em, Group, Menu, px, Stack, Switch, Text} from '@mantine/core'
+import {UpdateUserCommand} from '@remnawave/backend-contract'
+import {zodResolver} from 'mantine-form-zod-resolver'
+import {PiFloppyDiskDuotone} from 'react-icons/pi'
+import {useMediaQuery} from '@mantine/hooks'
+import {useTranslation} from 'react-i18next'
+import {TbDots} from 'react-icons/tb'
+import {useForm} from '@mantine/form'
+import {motion} from 'motion/react'
+import {useEffect} from 'react'
 import dayjs from 'dayjs'
 
 import {
@@ -24,18 +24,19 @@ import {
     useGetUserByUuid,
     useGetUserTags,
     usersQueryKeys,
-    useUpdateUser
+    useUpdateUser,
+    useUpdateTrafficAudit
 } from '@shared/api/hooks'
-import { ToggleUserStatusButtonFeature } from '@features/ui/dashboard/users/toggle-user-status-button'
-import { RevokeSubscriptionUserFeature } from '@features/ui/dashboard/users/revoke-subscription-user'
-import { useUserModalStoreActions } from '@entities/dashboard/user-modal-store/user-modal-store'
-import { ResetUsageUserFeature } from '@features/ui/dashboard/users/reset-usage-user'
-import { DeleteUserFeature } from '@features/ui/dashboard/users/delete-user'
-import { bytesToGbUtil, gbToBytesUtil } from '@shared/utils/bytes'
-import { LoaderModalShared } from '@shared/ui/loader-modal'
-import { handleFormErrors } from '@shared/utils/misc'
-import { ModalFooter } from '@shared/ui/modal-footer'
-import { queryClient } from '@shared/api'
+import {ToggleUserStatusButtonFeature} from '@features/ui/dashboard/users/toggle-user-status-button'
+import {RevokeSubscriptionUserFeature} from '@features/ui/dashboard/users/revoke-subscription-user'
+import {useUserModalStoreActions} from '@entities/dashboard/user-modal-store/user-modal-store'
+import {ResetUsageUserFeature} from '@features/ui/dashboard/users/reset-usage-user'
+import {DeleteUserFeature} from '@features/ui/dashboard/users/delete-user'
+import {bytesToGbUtil, gbToBytesUtil} from '@shared/utils/bytes'
+import {LoaderModalShared} from '@shared/ui/loader-modal'
+import {handleFormErrors} from '@shared/utils/misc'
+import {ModalFooter} from '@shared/ui/modal-footer'
+import {queryClient} from '@shared/api'
 
 const MotionWrapper = motion.div
 const MotionStack = motion.create(Stack)
@@ -50,11 +51,11 @@ const containerVariants = {
 }
 
 const cardVariants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: {opacity: 0, y: 20},
     visible: {
         opacity: 1,
         y: 0,
-        transition: { duration: 0.3 }
+        transition: {duration: 0.3}
     }
 }
 
@@ -63,18 +64,18 @@ interface IProps {
 }
 
 export const ViewUserModalContent = (props: IProps) => {
-    const { userUuid } = props
+    const {userUuid} = props
 
-    const { t } = useTranslation()
+    const {t} = useTranslation()
 
     const actions = useUserModalStoreActions()
 
     const isMobile = useMediaQuery(`(max-width: ${em(768)})`)
 
-    const { data: internalSquads } = useGetInternalSquads()
-    const { data: externalSquads } = useGetExternalSquads()
-    const { data: nodes } = useGetNodes()
-    const { data: tags } = useGetUserTags()
+    const {data: internalSquads} = useGetInternalSquads()
+    const {data: externalSquads} = useGetExternalSquads()
+    const {data: nodes} = useGetNodes()
+    const {data: tags} = useGetUserTags()
 
     const form = useForm<UpdateUserCommand.Request>({
         name: 'edit-user-form',
@@ -95,13 +96,16 @@ export const ViewUserModalContent = (props: IProps) => {
         )
     })
 
-    const { data: user, isError } = useGetUserByUuid({
+    const {data: user, isError} = useGetUserByUuid({
         route: {
             uuid: userUuid
         }
     })
 
-    const { mutate: updateUser, isPending: isUpdateUserPending } = useUpdateUser({
+    const {mutate: updateTrafficAudit, isPending: isUpdateTrafficAuditPending} =
+        useUpdateTrafficAudit()
+
+    const {mutate: updateUser, isPending: isUpdateUserPending} = useUpdateUser({
         mutationFns: {
             onSuccess: (data) => {
                 queryClient.refetchQueries({
@@ -187,21 +191,53 @@ export const ViewUserModalContent = (props: IProps) => {
     if (!user || !nodes || !tags || !internalSquads || !externalSquads) {
         return (
             <motion.div
-                animate={{ opacity: 1 }}
-                initial={{ opacity: 0 }}
-                transition={{ duration: 0.3 }}
+                animate={{opacity: 1}}
+                initial={{opacity: 0}}
+                transition={{duration: 0.3}}
             >
-                <LoaderModalShared h="78vh" />
+                <LoaderModalShared h="78vh"/>
             </motion.div>
         )
     }
 
     const lastConnectedNode = nodes.find((n) => n.uuid === user.userTraffic.lastConnectedNodeUuid)
 
+    const userWithTrafficAudit = user as typeof user & {
+        isAuditEnabled?: boolean
+    }
+
+    const trafficAuditCard = (
+        <MotionWrapper variants={cardVariants}>
+            <Card withBorder>
+                <Stack gap="xs">
+                    <Group justify="space-between" wrap="nowrap">
+                        <Stack gap={2}>
+                            <Text fw={500}>Traffic audit</Text>
+                            <Text c="dimmed" size="sm">
+                                Save visited domains and network destinations for this user.
+                            </Text>
+                        </Stack>
+
+                        <Switch
+                            checked={Boolean(userWithTrafficAudit.isAuditEnabled)}
+                            disabled={isUpdateTrafficAuditPending}
+                            onChange={(event) => {
+                                updateTrafficAudit({
+                                    userUuid: user.uuid,
+                                    enabled: event.currentTarget.checked
+                                })
+                            }}
+                        />
+                    </Group>
+                </Stack>
+            </Card>
+        </MotionWrapper>
+    )
+
     return (
         <motion.div
-            animate={{ opacity: 1 }}
-            initial={{ opacity: 0 }}
+            animate={{opacity: 1}}
+            initial={{opacity: 0}}
             transition={{
                 duration: 0.4,
                 ease: 'easeInOut'
@@ -232,6 +268,7 @@ export const ViewUserModalContent = (props: IProps) => {
                         internalSquads={internalSquads}
                         motionWrapper={MotionWrapper}
                     />
+                    {trafficAuditCard}
                     <ContactInformationCard
                         cardVariants={cardVariants}
                         form={form}
@@ -252,7 +289,7 @@ export const ViewUserModalContent = (props: IProps) => {
                         animate="visible"
                         gap="md"
                         initial="hidden"
-                        style={{ flex: '1 1 450px' }}
+                        style={{flex: '1 1 450px'}}
                         variants={containerVariants}
                     >
                         <UserIdentificationCard
@@ -278,7 +315,7 @@ export const ViewUserModalContent = (props: IProps) => {
                         animate="visible"
                         gap="md"
                         initial="hidden"
-                        style={{ flex: '1 1 450px' }}
+                        style={{flex: '1 1 450px'}}
                         variants={containerVariants}
                     >
                         <TrafficLimitsCard
@@ -300,26 +337,26 @@ export const ViewUserModalContent = (props: IProps) => {
             <ModalFooter isMobile={isMobile}>
                 <Menu keepMounted position="top-end" shadow="md">
                     <Menu.Target>
-                        <Button color="gray" leftSection={<TbDots size={px('1.2rem')} />} size="md">
+                        <Button color="gray" leftSection={<TbDots size={px('1.2rem')}/>} size="md">
                             {t('view-user-modal.widget.more-actions')}
                         </Button>
                     </Menu.Target>
 
                     <Menu.Dropdown>
                         <Menu.Label>{t('view-user-modal.widget.danger-zone')}</Menu.Label>
-                        <DeleteUserFeature userUuid={user.uuid} />
+                        <DeleteUserFeature userUuid={user.uuid}/>
 
-                        <Menu.Divider />
+                        <Menu.Divider/>
                         <Menu.Label>{t('view-user-modal.widget.management')}</Menu.Label>
-                        <ToggleUserStatusButtonFeature user={user} />
-                        <ResetUsageUserFeature userUuid={user.uuid} />
-                        <RevokeSubscriptionUserFeature userUuid={user.uuid} />
+                        <ToggleUserStatusButtonFeature user={user}/>
+                        <ResetUsageUserFeature userUuid={user.uuid}/>
+                        <RevokeSubscriptionUserFeature userUuid={user.uuid}/>
                     </Menu.Dropdown>
                 </Menu>
 
                 <Button
                     color="teal"
-                    leftSection={<PiFloppyDiskDuotone size="16px" />}
+                    leftSection={<PiFloppyDiskDuotone size="16px"/>}
                     loading={isUpdateUserPending}
                     onClick={() => {
                         handleSubmit()
