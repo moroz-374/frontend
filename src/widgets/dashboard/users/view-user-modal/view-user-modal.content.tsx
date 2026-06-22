@@ -1,4 +1,4 @@
-import {Button, Card, em, Group, Menu, px, Stack, Switch, Text} from '@mantine/core'
+import { Badge, Button, Card, em, Group, Menu, px, Stack, Switch, Table, Text } from '@mantine/core'
 import {UpdateUserCommand} from '@remnawave/backend-contract'
 import {zodResolver} from 'mantine-form-zod-resolver'
 import {PiFloppyDiskDuotone} from 'react-icons/pi'
@@ -25,7 +25,8 @@ import {
     useGetUserTags,
     usersQueryKeys,
     useUpdateUser,
-    useUpdateTrafficAudit
+    useUpdateTrafficAudit,
+    useGetTrafficAuditLogs
 } from '@shared/api/hooks'
 import {ToggleUserStatusButtonFeature} from '@features/ui/dashboard/users/toggle-user-status-button'
 import {RevokeSubscriptionUserFeature} from '@features/ui/dashboard/users/revoke-subscription-user'
@@ -100,6 +101,18 @@ export const ViewUserModalContent = (props: IProps) => {
         route: {
             uuid: userUuid
         }
+    })
+
+    const userWithTrafficAudit = user as
+        | (NonNullable<typeof user> & {
+        isAuditEnabled?: boolean
+    })
+        | undefined
+
+    const { data: trafficAuditLogs, isFetching: isTrafficAuditLogsFetching } = useGetTrafficAuditLogs({
+        userUuid,
+        limit: 50,
+        enabled: Boolean(userWithTrafficAudit?.isAuditEnabled)
     })
 
     const {mutate: updateTrafficAudit, isPending: isUpdateTrafficAuditPending} =
@@ -202,14 +215,11 @@ export const ViewUserModalContent = (props: IProps) => {
 
     const lastConnectedNode = nodes.find((n) => n.uuid === user.userTraffic.lastConnectedNodeUuid)
 
-    const userWithTrafficAudit = user as typeof user & {
-        isAuditEnabled?: boolean
-    }
 
     const trafficAuditCard = (
         <MotionWrapper variants={cardVariants}>
             <Card withBorder>
-                <Stack gap="xs">
+                <Stack gap="md">
                     <Group justify="space-between" wrap="nowrap">
                         <Stack gap={2}>
                             <Text fw={500}>Traffic audit</Text>
@@ -219,7 +229,7 @@ export const ViewUserModalContent = (props: IProps) => {
                         </Stack>
 
                         <Switch
-                            checked={Boolean(userWithTrafficAudit.isAuditEnabled)}
+                            checked={Boolean(userWithTrafficAudit?.isAuditEnabled)}
                             disabled={isUpdateTrafficAuditPending}
                             onChange={(event) => {
                                 updateTrafficAudit({
@@ -229,6 +239,61 @@ export const ViewUserModalContent = (props: IProps) => {
                             }}
                         />
                     </Group>
+
+                    {Boolean(userWithTrafficAudit?.isAuditEnabled) && (
+                        <Stack gap="xs">
+                            <Group justify="space-between">
+                                <Text fw={500} size="sm">
+                                    Latest destinations
+                                </Text>
+                                <Badge color="gray" variant="light">
+                                    last 50
+                                </Badge>
+                            </Group>
+
+                            {isTrafficAuditLogsFetching && (
+                                <Text c="dimmed" size="sm">
+                                    Loading traffic audit records...
+                                </Text>
+                            )}
+
+                            {!isTrafficAuditLogsFetching && !trafficAuditLogs?.items.length && (
+                                <Text c="dimmed" size="sm">
+                                    No traffic audit records yet.
+                                </Text>
+                            )}
+
+                            {!isTrafficAuditLogsFetching && Boolean(trafficAuditLogs?.items.length) && (
+                                <Table fz="xs">
+                                    <Table.Thead>
+                                        <Table.Tr>
+                                            <Table.Th>Time</Table.Th>
+                                            <Table.Th>Destination</Table.Th>
+                                            <Table.Th>Type</Table.Th>
+                                            <Table.Th>Network</Table.Th>
+                                            <Table.Th>Port</Table.Th>
+                                        </Table.Tr>
+                                    </Table.Thead>
+
+                                    <Table.Tbody>
+                                        {trafficAuditLogs?.items.map((item) => (
+                                            <Table.Tr key={item.id}>
+                                                <Table.Td>
+                                                    {dayjs(item.requestedAt).format(
+                                                        'YYYY-MM-DD HH:mm:ss'
+                                                    )}
+                                                </Table.Td>
+                                                <Table.Td>{item.destination}</Table.Td>
+                                                <Table.Td>{item.destinationType}</Table.Td>
+                                                <Table.Td>{item.network}</Table.Td>
+                                                <Table.Td>{item.port}</Table.Td>
+                                            </Table.Tr>
+                                        ))}
+                                    </Table.Tbody>
+                                </Table>
+                            )}
+                        </Stack>
+                    )}
                 </Stack>
             </Card>
         </MotionWrapper>
