@@ -8,10 +8,17 @@ import {
 } from '@remnawave/backend-contract'
 import { createQueryKeys } from '@lukemorales/query-key-factory'
 import { keepPreviousData } from '@tanstack/react-query'
+import { z } from 'zod'
 
 import { sToMs } from '@shared/utils/time-utils'
 
 import { createGetQueryHook, errorHandler } from '../../tsq-helpers'
+
+const getUserByUuidWithTrafficAuditResponseSchema = GetUserByUuidCommand.ResponseSchema.extend({
+    response: GetUserByUuidCommand.ResponseSchema.shape.response.extend({
+        isAuditEnabled: z.boolean().default(false)
+    })
+})
 
 export const usersQueryKeys = createQueryKeys('users', {
     getAllUsers: (filters: GetAllUsersCommand.RequestQuery) => ({
@@ -38,7 +45,7 @@ export const usersQueryKeys = createQueryKeys('users', {
 
 export const useGetUserByUuid = createGetQueryHook({
     endpoint: GetUserByUuidCommand.TSQ_url,
-    responseSchema: GetUserByUuidCommand.ResponseSchema,
+    responseSchema: getUserByUuidWithTrafficAuditResponseSchema,
     routeParamsSchema: GetUserByUuidCommand.RequestSchema,
     getQueryKey: ({ route }) => usersQueryKeys.getUserByUuid(route!).queryKey,
     rQueryParams: {
