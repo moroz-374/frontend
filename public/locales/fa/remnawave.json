@@ -2130,5 +2130,33 @@
             "history": "History",
             "providers": "Providers"
         }
+    },
+    "traffic-audit": {
+        "title": "ممیزی ترافیک",
+        "description": "مقصدهای شبکه این کاربر را ذخیره کنید.",
+        "destination": "مقصد",
+        "type": "نوع",
+        "from": "از",
+        "to": "تا",
+        "node": "نود",
+        "network": "شبکه",
+        "port": "پورت",
+        "time": "زمان",
+        "clear-filters": "پاک کردن فیلترها",
+        "loading": "در حال بارگذاری سوابق ممیزی...",
+        "empty": "رکوردی یافت نشد.",
+        "load-more": "بارگذاری بیشتر"
+    },
+    "traffic-audit-settings": {
+        "title": "قوانین ممیزی ترافیک",
+        "description": "مقصدهای منطبق را بدون حذف رویدادهای اصلی پنهان کنید.",
+        "rule-type": "نوع قانون",
+        "pattern": "الگو",
+        "pattern-placeholder": "example.com یا *.internal.example",
+        "exact": "دقیق",
+        "suffix": "پسوند دامنه",
+        "glob": "Glob",
+        "add-rule": "افزودن قانون",
+        "remove-rule": "حذف قانون"
     }
 }

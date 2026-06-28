@@ -33,7 +33,9 @@ export const CopyDockerComposeWidget = ({ port }: IProps) => {
         hard: 1048576
     environment:
       - NODE_PORT=${port ?? 2222}
-      - SECRET_KEY="${pubKey.pubKey.trimEnd()}"`
+      - SECRET_KEY="${pubKey.pubKey.trimEnd()}"
+      - TRAFFIC_AUDIT_BACKEND_URL="${window.location.origin}"
+      - TRAFFIC_AUDIT_CREDENTIAL="${pubKey.trafficAuditCredential}"`
     }
 
     return (

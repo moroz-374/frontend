@@ -2130,5 +2130,33 @@
             "history": "历史",
             "providers": "服务商"
         }
+    },
+    "traffic-audit": {
+        "title": "流量审计",
+        "description": "保存此用户的网络目标。",
+        "destination": "目标",
+        "type": "类型",
+        "from": "开始",
+        "to": "结束",
+        "node": "节点",
+        "network": "网络",
+        "port": "端口",
+        "time": "时间",
+        "clear-filters": "清除筛选",
+        "loading": "正在加载流量审计记录...",
+        "empty": "未找到流量审计记录。",
+        "load-more": "加载更多"
+    },
+    "traffic-audit-settings": {
+        "title": "流量审计规则",
+        "description": "在不删除源事件的情况下隐藏日志中的匹配目标。",
+        "rule-type": "规则类型",
+        "pattern": "模式",
+        "pattern-placeholder": "example.com 或 *.internal.example",
+        "exact": "精确",
+        "suffix": "域名后缀",
+        "glob": "Glob",
+        "add-rule": "添加规则",
+        "remove-rule": "删除规则"
     }
 }

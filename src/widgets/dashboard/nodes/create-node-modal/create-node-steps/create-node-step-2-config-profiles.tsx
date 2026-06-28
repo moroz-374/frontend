@@ -1,4 +1,3 @@
-import { CreateNodeCommand } from '@remnawave/backend-contract'
 import { Button, Group, Skeleton, Stack } from '@mantine/core'
 import { UseFormReturnType } from '@mantine/form'
 import { useTranslation } from 'react-i18next'
@@ -9,10 +8,11 @@ import { ShowConfigProfilesWithInboundsFeature } from '@features/ui/dashboard/no
 import { useGetConfigProfiles } from '@shared/api/hooks'
 
 import { CopyDockerComposeWidget } from './copy-docker-compose.widget'
+import { CreateNodeWithTrafficAuditCredential } from '@shared/api/hooks/nodes/nodes.mutation.hooks'
 
 interface IProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    form: UseFormReturnType<CreateNodeCommand.Request, any>
+    form: UseFormReturnType<CreateNodeWithTrafficAuditCredential, any>
     isCreating: boolean
     onCreateNode: () => void
     onPrev: () => void

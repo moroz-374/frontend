@@ -30,17 +30,12 @@ export const useUpdateTrafficAudit = () => {
             )
 
             queryClient.invalidateQueries({
-                queryKey: trafficAuditQueryKeys.logs({
-                    userUuid: variables.userUuid,
-                    limit: 50
-                }).queryKey
+                queryKey: trafficAuditQueryKeys.logs._def
             })
 
             notifications.show({
                 title: 'Success',
-                message: data.isAuditEnabled
-                    ? 'Traffic audit enabled'
-                    : 'Traffic audit disabled',
+                message: data.isAuditEnabled ? 'Traffic audit enabled' : 'Traffic audit disabled',
                 color: 'teal'
             })
         },

@@ -15,6 +15,16 @@ export interface TrafficLogPage {
     nextCursor: string | null
 }
 
+export interface TrafficLogFilters {
+    destination?: string
+    from?: string
+    to?: string
+    destinationType?: TrafficLogItem['destinationType']
+    nodeUuid?: string
+    network?: TrafficLogItem['network']
+    port?: number
+}
+
 export async function updateTrafficAudit(userUuid: string, enabled: boolean) {
     const { data } = await instance.patch<{
         response: {
@@ -28,11 +38,13 @@ export async function updateTrafficAudit(userUuid: string, enabled: boolean) {
     return data.response
 }
 
-export async function getTrafficAuditLogs(params: {
-    userUuid: string
-    cursor?: string
-    limit?: number
-}) {
+export async function getTrafficAuditLogs(
+    params: TrafficLogFilters & {
+        userUuid: string
+        cursor?: string
+        limit?: number
+    }
+) {
     const { userUuid, ...query } = params
 
     const { data } = await instance.get<{

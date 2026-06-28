@@ -1,5 +1,4 @@
 import { em, Group, Modal, Progress, Stack, Transition } from '@mantine/core'
-import { CreateNodeCommand } from '@remnawave/backend-contract'
 import { zodResolver } from 'mantine-form-zod-resolver'
 import { useTranslation } from 'react-i18next'
 import { useMediaQuery } from '@mantine/hooks'
@@ -12,6 +11,10 @@ import { configProfilesQueryKeys, useCreateNode, useGetPubKey } from '@shared/ap
 import { BaseOverlayHeader } from '@shared/ui/overlays/base-overlay-header'
 import { gbToBytesUtil } from '@shared/utils/bytes'
 import { queryClient } from '@shared/api'
+import {
+    CreateNodeWithTrafficAuditCredential,
+    CreateNodeWithTrafficAuditCredentialSchema
+} from '@shared/api/hooks/nodes/nodes.mutation.hooks'
 
 import { CreateNodeStep2ConfigProfiles } from './create-node-steps/create-node-step-2-config-profiles'
 import { CreateNodeStep1Connection } from './create-node-steps/create-node-step-1-connection'
@@ -31,10 +34,10 @@ export const CreateNodeModalWidget = () => {
     const [createdNodeUuid, setCreatedNodeUuid] = useState<string>()
     const [selectedPort, setSelectedPort] = useState<number>(2222)
 
-    const form = useForm<CreateNodeCommand.Request>({
+    const form = useForm<CreateNodeWithTrafficAuditCredential>({
         name: 'create-node-form',
         mode: 'uncontrolled',
-        validate: zodResolver(CreateNodeCommand.RequestSchema)
+        validate: zodResolver(CreateNodeWithTrafficAuditCredentialSchema)
     })
 
     const handleClose = () => {
@@ -86,6 +89,12 @@ export const CreateNodeModalWidget = () => {
             port: 2222
         })
     }, [form])
+
+    useEffect(() => {
+        if (pubKey?.trafficAuditCredential) {
+            form.setFieldValue('trafficAuditCredential', pubKey.trafficAuditCredential)
+        }
+    }, [form, pubKey?.trafficAuditCredential])
 
     form.watch('port', ({ value }) => {
         if (value) {

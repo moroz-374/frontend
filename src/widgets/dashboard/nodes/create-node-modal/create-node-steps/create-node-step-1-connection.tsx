@@ -11,19 +11,19 @@ import {
     TextInput
 } from '@mantine/core'
 import { TbCertificate, TbId, TbMapPin, TbWorld } from 'react-icons/tb'
-import { CreateNodeCommand } from '@remnawave/backend-contract'
 import { UseFormReturnType } from '@mantine/form'
 import { useTranslation } from 'react-i18next'
 import { PiArrowRight } from 'react-icons/pi'
 
 import { CopyableFieldShared } from '@shared/ui/copyable-field/copyable-field'
 import { COUNTRIES } from '@shared/ui/forms/nodes/base-node-form/constants'
+import { CreateNodeWithTrafficAuditCredential } from '@shared/api/hooks/nodes/nodes.mutation.hooks'
 
 import { CopyDockerComposeWidget } from './copy-docker-compose.widget'
 
 interface IProps {
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    form: UseFormReturnType<CreateNodeCommand.Request, any>
+    form: UseFormReturnType<CreateNodeWithTrafficAuditCredential, any>
     onNext: () => void
     port: number
     pubKey: string | undefined

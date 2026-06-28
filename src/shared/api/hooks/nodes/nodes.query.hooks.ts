@@ -4,6 +4,7 @@ import {
     GetOneNodeCommand,
     GetPubKeyCommand
 } from '@remnawave/backend-contract'
+import { z } from 'zod'
 import { createQueryKeys } from '@lukemorales/query-key-factory'
 import { keepPreviousData } from '@tanstack/react-query'
 
@@ -49,15 +50,21 @@ export const useGetNode = createGetQueryHook({
     },
     errorHandler: (error) => errorHandler(error, 'Get Node')
 })
+export const GetPubKeyWithTrafficAuditCredentialSchema = GetPubKeyCommand.ResponseSchema.extend({
+    response: GetPubKeyCommand.ResponseSchema.shape.response.extend({
+        trafficAuditCredential: z.string()
+    })
+})
+
 export const useGetPubKey = createGetQueryHook({
     endpoint: GetPubKeyCommand.TSQ_url,
-    responseSchema: GetPubKeyCommand.ResponseSchema,
+    responseSchema: GetPubKeyWithTrafficAuditCredentialSchema,
     getQueryKey: () => nodesQueryKeys.getPubKey.queryKey,
     rQueryParams: {
         placeholderData: keepPreviousData,
         refetchOnMount: true,
-        staleTime: sToMs(5),
-        refetchInterval: sToMs(5)
+        staleTime: Infinity,
+        refetchInterval: false
     },
 
     errorHandler: (error) => errorHandler(error, 'Get PubKey')

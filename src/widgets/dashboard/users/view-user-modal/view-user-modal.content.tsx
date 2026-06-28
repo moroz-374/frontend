@@ -1,4 +1,18 @@
-import { Badge, Button, Card, em, Group, Menu, px, Stack, Switch, Table, Text } from '@mantine/core'
+import {
+    Button,
+    Card,
+    em,
+    Group,
+    Menu,
+    NumberInput,
+    px,
+    Select,
+    Stack,
+    Switch,
+    Table,
+    Text,
+    TextInput
+} from '@mantine/core'
 import { UpdateUserCommand } from '@remnawave/backend-contract'
 import { zodResolver } from 'mantine-form-zod-resolver'
 import { PiFloppyDiskDuotone } from 'react-icons/pi'
@@ -7,7 +21,7 @@ import { useTranslation } from 'react-i18next'
 import { TbDots } from 'react-icons/tb'
 import { useForm } from '@mantine/form'
 import { motion } from 'motion/react'
-import { useEffect } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
 import {
@@ -38,6 +52,7 @@ import { LoaderModalShared } from '@shared/ui/loader-modal'
 import { handleFormErrors } from '@shared/utils/misc'
 import { ModalFooter } from '@shared/ui/modal-footer'
 import { queryClient } from '@shared/api'
+import { TrafficLogFilters } from '@shared/api/traffic-audit'
 
 const MotionWrapper = motion.div
 const MotionStack = motion.create(Stack)
@@ -77,6 +92,26 @@ export const ViewUserModalContent = (props: IProps) => {
     const { data: externalSquads } = useGetExternalSquads()
     const { data: nodes } = useGetNodes()
     const { data: tags } = useGetUserTags()
+    const [trafficAuditFilters, setTrafficAuditFilters] = useState<
+        TrafficLogFilters & { fromLocal?: string; toLocal?: string }
+    >({})
+
+    const trafficAuditApiFilters = useMemo<TrafficLogFilters>(
+        () => ({
+            destination: trafficAuditFilters.destination || undefined,
+            destinationType: trafficAuditFilters.destinationType,
+            nodeUuid: trafficAuditFilters.nodeUuid,
+            network: trafficAuditFilters.network,
+            port: trafficAuditFilters.port,
+            from: trafficAuditFilters.fromLocal
+                ? dayjs(trafficAuditFilters.fromLocal).toISOString()
+                : undefined,
+            to: trafficAuditFilters.toLocal
+                ? dayjs(trafficAuditFilters.toLocal).toISOString()
+                : undefined
+        }),
+        [trafficAuditFilters]
+    )
 
     const form = useForm<UpdateUserCommand.Request>({
         name: 'edit-user-form',
@@ -103,11 +138,20 @@ export const ViewUserModalContent = (props: IProps) => {
         }
     })
 
-    const { data: trafficAuditLogs, isFetching: isTrafficAuditLogsFetching } = useGetTrafficAuditLogs({
+    const {
+        data: trafficAuditLogs,
+        fetchNextPage: fetchNextTrafficAuditPage,
+        hasNextPage: hasNextTrafficAuditPage,
+        isFetching: isTrafficAuditLogsFetching,
+        isFetchingNextPage: isFetchingNextTrafficAuditPage
+    } = useGetTrafficAuditLogs({
         userUuid,
         limit: 50,
+        filters: trafficAuditApiFilters,
         enabled: Boolean(user?.isAuditEnabled)
     })
+
+    const trafficAuditItems = trafficAuditLogs?.pages.flatMap((page) => page.items) ?? []
 
     const { mutate: updateTrafficAudit, isPending: isUpdateTrafficAuditPending } =
         useUpdateTrafficAudit()
@@ -202,13 +246,12 @@ export const ViewUserModalContent = (props: IProps) => {
                 initial={{ opacity: 0 }}
                 transition={{ duration: 0.3 }}
             >
-                <LoaderModalShared h="78vh"/>
+                <LoaderModalShared h="78vh" />
             </motion.div>
         )
     }
 
     const lastConnectedNode = nodes.find((n) => n.uuid === user.userTraffic.lastConnectedNodeUuid)
-
 
     const trafficAuditCard = (
         <MotionWrapper variants={cardVariants}>
@@ -216,9 +259,9 @@ export const ViewUserModalContent = (props: IProps) => {
                 <Stack gap="md">
                     <Group justify="space-between" wrap="nowrap">
                         <Stack gap={2}>
-                            <Text fw={500}>Traffic audit</Text>
+                            <Text fw={500}>{t('traffic-audit.title')}</Text>
                             <Text c="dimmed" size="sm">
-                                Save visited domains and network destinations for this user.
+                                {t('traffic-audit.description')}
                             </Text>
                         </Stack>
 
@@ -236,41 +279,133 @@ export const ViewUserModalContent = (props: IProps) => {
 
                     {Boolean(user.isAuditEnabled) && (
                         <Stack gap="xs">
-                            <Group justify="space-between">
-                                <Text fw={500} size="sm">
-                                    Latest destinations
-                                </Text>
-                                <Badge color="gray" variant="light">
-                                    last 50
-                                </Badge>
+                            <Group grow>
+                                <TextInput
+                                    label={t('traffic-audit.destination')}
+                                    onChange={(event) =>
+                                        setTrafficAuditFilters((current) => ({
+                                            ...current,
+                                            destination: event.currentTarget.value
+                                        }))
+                                    }
+                                    value={trafficAuditFilters.destination ?? ''}
+                                />
+                                <Select
+                                    clearable
+                                    data={['DOMAIN', 'IPV4', 'IPV6', 'UNKNOWN']}
+                                    label={t('traffic-audit.type')}
+                                    onChange={(value) =>
+                                        setTrafficAuditFilters((current) => ({
+                                            ...current,
+                                            destinationType:
+                                                (value as TrafficLogFilters['destinationType']) ||
+                                                undefined
+                                        }))
+                                    }
+                                    value={trafficAuditFilters.destinationType ?? null}
+                                />
                             </Group>
+                            <Group grow>
+                                <TextInput
+                                    label={t('traffic-audit.from')}
+                                    onChange={(event) =>
+                                        setTrafficAuditFilters((current) => ({
+                                            ...current,
+                                            fromLocal: event.currentTarget.value
+                                        }))
+                                    }
+                                    type="datetime-local"
+                                    value={trafficAuditFilters.fromLocal ?? ''}
+                                />
+                                <TextInput
+                                    label={t('traffic-audit.to')}
+                                    onChange={(event) =>
+                                        setTrafficAuditFilters((current) => ({
+                                            ...current,
+                                            toLocal: event.currentTarget.value
+                                        }))
+                                    }
+                                    type="datetime-local"
+                                    value={trafficAuditFilters.toLocal ?? ''}
+                                />
+                            </Group>
+                            <Group grow>
+                                <Select
+                                    clearable
+                                    data={nodes.map((node) => ({
+                                        value: node.uuid,
+                                        label: node.name
+                                    }))}
+                                    label={t('traffic-audit.node')}
+                                    onChange={(value) =>
+                                        setTrafficAuditFilters((current) => ({
+                                            ...current,
+                                            nodeUuid: value || undefined
+                                        }))
+                                    }
+                                    searchable
+                                    value={trafficAuditFilters.nodeUuid ?? null}
+                                />
+                                <Select
+                                    clearable
+                                    data={['tcp', 'udp']}
+                                    label={t('traffic-audit.network')}
+                                    onChange={(value) =>
+                                        setTrafficAuditFilters((current) => ({
+                                            ...current,
+                                            network:
+                                                (value as TrafficLogFilters['network']) || undefined
+                                        }))
+                                    }
+                                    value={trafficAuditFilters.network ?? null}
+                                />
+                                <NumberInput
+                                    allowDecimal={false}
+                                    allowNegative={false}
+                                    label={t('traffic-audit.port')}
+                                    max={65535}
+                                    min={1}
+                                    onChange={(value) =>
+                                        setTrafficAuditFilters((current) => ({
+                                            ...current,
+                                            port: typeof value === 'number' ? value : undefined
+                                        }))
+                                    }
+                                    value={trafficAuditFilters.port ?? ''}
+                                />
+                            </Group>
+
+                            <Button onClick={() => setTrafficAuditFilters({})} variant="subtle">
+                                {t('traffic-audit.clear-filters')}
+                            </Button>
 
                             {isTrafficAuditLogsFetching && (
                                 <Text c="dimmed" size="sm">
-                                    Loading traffic audit records...
+                                    {t('traffic-audit.loading')}
                                 </Text>
                             )}
 
-                            {!isTrafficAuditLogsFetching && !trafficAuditLogs?.items.length && (
+                            {!isTrafficAuditLogsFetching && !trafficAuditItems.length && (
                                 <Text c="dimmed" size="sm">
-                                    No traffic audit records yet.
+                                    {t('traffic-audit.empty')}
                                 </Text>
                             )}
 
-                            {!isTrafficAuditLogsFetching && Boolean(trafficAuditLogs?.items.length) && (
+                            {Boolean(trafficAuditItems.length) && (
                                 <Table fz="xs">
                                     <Table.Thead>
                                         <Table.Tr>
-                                            <Table.Th>Time</Table.Th>
-                                            <Table.Th>Destination</Table.Th>
-                                            <Table.Th>Type</Table.Th>
-                                            <Table.Th>Network</Table.Th>
-                                            <Table.Th>Port</Table.Th>
+                                            <Table.Th>{t('traffic-audit.time')}</Table.Th>
+                                            <Table.Th>{t('traffic-audit.destination')}</Table.Th>
+                                            <Table.Th>{t('traffic-audit.type')}</Table.Th>
+                                            <Table.Th>{t('traffic-audit.node')}</Table.Th>
+                                            <Table.Th>{t('traffic-audit.network')}</Table.Th>
+                                            <Table.Th>{t('traffic-audit.port')}</Table.Th>
                                         </Table.Tr>
                                     </Table.Thead>
 
                                     <Table.Tbody>
-                                        {trafficAuditLogs?.items.map((item) => (
+                                        {trafficAuditItems.map((item) => (
                                             <Table.Tr key={item.id}>
                                                 <Table.Td>
                                                     {dayjs(item.requestedAt).format(
@@ -279,12 +414,27 @@ export const ViewUserModalContent = (props: IProps) => {
                                                 </Table.Td>
                                                 <Table.Td>{item.destination}</Table.Td>
                                                 <Table.Td>{item.destinationType}</Table.Td>
+                                                <Table.Td>
+                                                    {nodes.find(
+                                                        (node) => node.uuid === item.nodeUuid
+                                                    )?.name ?? item.nodeUuid}
+                                                </Table.Td>
                                                 <Table.Td>{item.network}</Table.Td>
                                                 <Table.Td>{item.port}</Table.Td>
                                             </Table.Tr>
                                         ))}
                                     </Table.Tbody>
                                 </Table>
+                            )}
+
+                            {hasNextTrafficAuditPage && (
+                                <Button
+                                    loading={isFetchingNextTrafficAuditPage}
+                                    onClick={() => fetchNextTrafficAuditPage()}
+                                    variant="light"
+                                >
+                                    {t('traffic-audit.load-more')}
+                                </Button>
                             )}
                         </Stack>
                     )}
@@ -397,26 +547,26 @@ export const ViewUserModalContent = (props: IProps) => {
             <ModalFooter isMobile={isMobile}>
                 <Menu keepMounted position="top-end" shadow="md">
                     <Menu.Target>
-                        <Button color="gray" leftSection={<TbDots size={px('1.2rem')}/>} size="md">
+                        <Button color="gray" leftSection={<TbDots size={px('1.2rem')} />} size="md">
                             {t('view-user-modal.widget.more-actions')}
                         </Button>
                     </Menu.Target>
 
                     <Menu.Dropdown>
                         <Menu.Label>{t('view-user-modal.widget.danger-zone')}</Menu.Label>
-                        <DeleteUserFeature userUuid={user.uuid}/>
+                        <DeleteUserFeature userUuid={user.uuid} />
 
-                        <Menu.Divider/>
+                        <Menu.Divider />
                         <Menu.Label>{t('view-user-modal.widget.management')}</Menu.Label>
-                        <ToggleUserStatusButtonFeature user={user}/>
-                        <ResetUsageUserFeature userUuid={user.uuid}/>
-                        <RevokeSubscriptionUserFeature userUuid={user.uuid}/>
+                        <ToggleUserStatusButtonFeature user={user} />
+                        <ResetUsageUserFeature userUuid={user.uuid} />
+                        <RevokeSubscriptionUserFeature userUuid={user.uuid} />
                     </Menu.Dropdown>
                 </Menu>
 
                 <Button
                     color="teal"
-                    leftSection={<PiFloppyDiskDuotone size="16px"/>}
+                    leftSection={<PiFloppyDiskDuotone size="16px" />}
                     loading={isUpdateUserPending}
                     onClick={() => {
                         handleSubmit()

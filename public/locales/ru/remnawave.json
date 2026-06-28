@@ -2130,5 +2130,33 @@
             "history": "История",
             "providers": "Провайдеры"
         }
+    },
+    "traffic-audit": {
+        "title": "Аудит трафика",
+        "description": "Сохранять сетевые назначения этого пользователя.",
+        "destination": "Назначение",
+        "type": "Тип",
+        "from": "С",
+        "to": "По",
+        "node": "Нода",
+        "network": "Сеть",
+        "port": "Порт",
+        "time": "Время",
+        "clear-filters": "Очистить фильтры",
+        "loading": "Загрузка журнала аудита...",
+        "empty": "Записи аудита не найдены.",
+        "load-more": "Загрузить ещё"
+    },
+    "traffic-audit-settings": {
+        "title": "Правила аудита трафика",
+        "description": "Скрывать совпавшие назначения в журнале без удаления исходных событий.",
+        "rule-type": "Тип правила",
+        "pattern": "Шаблон",
+        "pattern-placeholder": "example.com или *.internal.example",
+        "exact": "Точное",
+        "suffix": "Суффикс домена",
+        "glob": "Glob",
+        "add-rule": "Добавить правило",
+        "remove-rule": "Удалить правило"
     }
 }

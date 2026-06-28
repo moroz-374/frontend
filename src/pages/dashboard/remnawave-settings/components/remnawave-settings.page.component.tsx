@@ -1,4 +1,4 @@
-import { FindAllApiTokensCommand, GetRemnawaveSettingsCommand } from '@remnawave/backend-contract'
+import { FindAllApiTokensCommand } from '@remnawave/backend-contract'
 import { useTranslation } from 'react-i18next'
 import Masonry from 'react-layout-masonry'
 import { Container } from '@mantine/core'
@@ -7,10 +7,12 @@ import { AuthentificationSettingsCardWidget } from '@widgets/remnawave-settings/
 import { BrandingSettingsCardWidget } from '@widgets/remnawave-settings/branding-settings-card/branding-settings-card.widget'
 import { ApiTokensCardWidget } from '@widgets/remnawave-settings/api-tokens-card/api-tokens-card.widget'
 import { LoadingScreen, Logo, Page, PageHeaderShared } from '@shared/ui'
+import { TrafficAuditSettingsCardWidget } from '@widgets/remnawave-settings/traffic-audit-settings-card/traffic-audit-settings-card.widget'
+import { RemnawaveSettingsWithTrafficAudit } from '@shared/api/hooks/remnawave-settings/remnawave-settings.query.hooks'
 
 interface IProps {
     apiTokensData: FindAllApiTokensCommand.Response['response']
-    remnawaveSettings: GetRemnawaveSettingsCommand.Response['response']
+    remnawaveSettings: RemnawaveSettingsWithTrafficAudit
 }
 
 export const RemnawaveSettingsPageComponent = (props: IProps) => {
@@ -26,7 +28,8 @@ export const RemnawaveSettingsPageComponent = (props: IProps) => {
         !remnawaveSettings.oauth2Settings ||
         !remnawaveSettings.passkeySettings ||
         !remnawaveSettings.passwordSettings ||
-        !remnawaveSettings.brandingSettings
+        !remnawaveSettings.brandingSettings ||
+        !remnawaveSettings.trafficAuditSettings
     ) {
         return <LoadingScreen />
     }
@@ -45,6 +48,9 @@ export const RemnawaveSettingsPageComponent = (props: IProps) => {
                     <ApiTokensCardWidget apiTokensData={apiTokensData} />
                     <BrandingSettingsCardWidget
                         brandingSettings={remnawaveSettings.brandingSettings}
+                    />
+                    <TrafficAuditSettingsCardWidget
+                        trafficAuditSettings={remnawaveSettings.trafficAuditSettings}
                     />
                 </Masonry>
             </Container>

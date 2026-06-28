@@ -2130,5 +2130,33 @@
             "history": "History",
             "providers": "Providers"
         }
+    },
+    "traffic-audit": {
+        "title": "Traffic audit",
+        "description": "Save network destinations for this user.",
+        "destination": "Destination",
+        "type": "Type",
+        "from": "From",
+        "to": "To",
+        "node": "Node",
+        "network": "Network",
+        "port": "Port",
+        "time": "Time",
+        "clear-filters": "Clear filters",
+        "loading": "Loading traffic audit records...",
+        "empty": "No traffic audit records found.",
+        "load-more": "Load more"
+    },
+    "traffic-audit-settings": {
+        "title": "Traffic audit rules",
+        "description": "Hide matching destinations in the journal without deleting source events.",
+        "rule-type": "Rule type",
+        "pattern": "Pattern",
+        "pattern-placeholder": "example.com or *.internal.example",
+        "exact": "Exact",
+        "suffix": "Domain suffix",
+        "glob": "Glob",
+        "add-rule": "Add rule",
+        "remove-rule": "Remove rule"
     }
 }

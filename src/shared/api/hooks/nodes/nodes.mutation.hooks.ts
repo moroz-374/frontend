@@ -12,13 +12,22 @@ import {
     RestartNodeCommand,
     UpdateNodeCommand
 } from '@remnawave/backend-contract'
+import { z } from 'zod'
 import { notifications } from '@mantine/notifications'
 
 import { createMutationHook } from '../../tsq-helpers'
 
+export const CreateNodeWithTrafficAuditCredentialSchema = CreateNodeCommand.RequestSchema.extend({
+    trafficAuditCredential: z.string().regex(/^[A-Za-z0-9_-]{20,64}\.[A-Za-z0-9_-]{32,128}$/)
+})
+
+export type CreateNodeWithTrafficAuditCredential = z.infer<
+    typeof CreateNodeWithTrafficAuditCredentialSchema
+>
+
 export const useCreateNode = createMutationHook({
     endpoint: CreateNodeCommand.TSQ_url,
-    bodySchema: CreateNodeCommand.RequestSchema,
+    bodySchema: CreateNodeWithTrafficAuditCredentialSchema,
     responseSchema: CreateNodeCommand.ResponseSchema,
     requestMethod: CreateNodeCommand.endpointDetails.REQUEST_METHOD,
     rMutationParams: {
