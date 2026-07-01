@@ -38,9 +38,15 @@ export const useGetNodes = createGetQueryHook({
     errorHandler: (error) => errorHandler(error, 'Get All Nodes')
 })
 
+export const GetOneNodeWithTrafficAuditSchema = GetOneNodeCommand.ResponseSchema.extend({
+    response: GetOneNodeCommand.ResponseSchema.shape.response.extend({
+        isTrafficAuditConfigured: z.boolean()
+    })
+})
+
 export const useGetNode = createGetQueryHook({
     endpoint: GetOneNodeCommand.TSQ_url,
-    responseSchema: GetOneNodeCommand.ResponseSchema,
+    responseSchema: GetOneNodeWithTrafficAuditSchema,
     routeParamsSchema: GetOneNodeCommand.RequestSchema,
     getQueryKey: ({ route }) => nodesQueryKeys.getNode(route!).queryKey,
     rQueryParams: {

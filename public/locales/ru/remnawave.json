@@ -439,6 +439,12 @@
         "supported-clients": "Поддерживаемые клиенты"
     },
     "base-node-form": {
+        "configure-traffic-audit": "Настроить аудит трафика",
+        "rotate-traffic-audit-credential": "Сменить credential аудита трафика",
+        "traffic-audit-credential-title": "Credential аудита трафика",
+        "traffic-audit-credential-confirm": "Текущий credential немедленно перестанет работать. Продолжить?",
+        "traffic-audit-credential-once": "Значение показывается один раз. Скопируйте compose до закрытия окна.",
+        "traffic-audit-compose-instructions": "Замените compose-файл ноды этой версией, затем выполните docker compose pull && docker compose down && docker compose up -d.",
         "country": "Страна",
         "select-country": "Выберите страну",
         "internal-name": "Внутреннее имя",

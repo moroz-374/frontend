@@ -22,7 +22,7 @@ export const CopyDockerComposeWidget = ({ port }: IProps) => {
   remnanode:
     container_name: remnanode
     hostname: remnanode
-    image: remnawave/node:latest
+    image: ghcr.io/moroz-374/remnawave-node:stable
     network_mode: host
     restart: always
     cap_add:
@@ -31,11 +31,25 @@ export const CopyDockerComposeWidget = ({ port }: IProps) => {
       nofile:
         soft: 1048576
         hard: 1048576
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - >-
+          node -e "const net=require('net');const socket=net.connect({host:'127.0.0.1',port:Number(process.env.NODE_PORT)},()=>{socket.destroy();process.exit(0)});socket.setTimeout(2000);socket.on('timeout',()=>socket.destroy(new Error('timeout')));socket.on('error',()=>process.exit(1))"
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 30s
     environment:
       - NODE_PORT=${port ?? 2222}
       - SECRET_KEY="${pubKey.pubKey.trimEnd()}"
       - TRAFFIC_AUDIT_BACKEND_URL="${window.location.origin}"
-      - TRAFFIC_AUDIT_CREDENTIAL="${pubKey.trafficAuditCredential}"`
+      - TRAFFIC_AUDIT_CREDENTIAL="${pubKey.trafficAuditCredential}"
+      - TRAFFIC_AUDIT_FLUSH_INTERVAL_MS=5000
+      - TRAFFIC_AUDIT_QUEUE_MAX_SIZE=20000
+      - TRAFFIC_AUDIT_REQUEST_TIMEOUT_MS=10000
+      - TRAFFIC_AUDIT_BACKOFF_INITIAL_MS=1000
+      - TRAFFIC_AUDIT_BACKOFF_MAX_MS=60000`
     }
 
     return (

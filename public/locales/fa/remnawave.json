@@ -439,6 +439,12 @@
         "supported-clients": "Supported clients"
     },
     "base-node-form": {
+        "configure-traffic-audit": "Configure traffic audit",
+        "rotate-traffic-audit-credential": "Rotate traffic audit credential",
+        "traffic-audit-credential-title": "Traffic audit credential",
+        "traffic-audit-credential-confirm": "The current credential will stop working immediately. Continue?",
+        "traffic-audit-credential-once": "This value is shown once. Copy the compose file before closing this window.",
+        "traffic-audit-compose-instructions": "Replace the node compose file with this version, then run docker compose pull && docker compose down && docker compose up -d.",
         "country": "کشور",
         "select-country": "انتخاب کشور",
         "internal-name": "نام داخلی",

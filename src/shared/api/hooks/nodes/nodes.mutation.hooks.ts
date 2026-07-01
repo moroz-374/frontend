@@ -17,6 +17,14 @@ import { notifications } from '@mantine/notifications'
 
 import { createMutationHook } from '../../tsq-helpers'
 
+const RotateTrafficAuditCredentialRequestSchema = z.object({ uuid: z.string().uuid() })
+const RotateTrafficAuditCredentialResponseSchema = z.object({
+    response: z.object({
+        trafficAuditCredential: z.string(),
+        issuedAt: z.string().datetime({ offset: true })
+    })
+})
+
 export const CreateNodeWithTrafficAuditCredentialSchema = CreateNodeCommand.RequestSchema.extend({
     trafficAuditCredential: z.string().regex(/^[A-Za-z0-9_-]{20,64}\.[A-Za-z0-9_-]{32,128}$/)
 })
@@ -67,6 +75,22 @@ export const useUpdateNode = createMutationHook({
                 title: `Update Node`,
                 message:
                     error instanceof Error ? error.message : `Request failed with unknown error.`,
+                color: 'red'
+            })
+        }
+    }
+})
+
+export const useRotateTrafficAuditCredential = createMutationHook({
+    endpoint: '/api/nodes/:uuid/actions/rotate-traffic-audit-credential',
+    responseSchema: RotateTrafficAuditCredentialResponseSchema,
+    routeParamsSchema: RotateTrafficAuditCredentialRequestSchema,
+    requestMethod: 'post',
+    rMutationParams: {
+        onError: (error) => {
+            notifications.show({
+                title: 'Traffic audit credential',
+                message: error instanceof Error ? error.message : 'Request failed.',
                 color: 'red'
             })
         }
