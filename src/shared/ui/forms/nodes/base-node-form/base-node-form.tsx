@@ -103,9 +103,9 @@ export const BaseNodeForm = <T extends UpdateNodeCommand.Request>(props: IProps<
       start_period: 30s
     environment:
       - NODE_PORT=${node.port ?? 2222}
-      - SECRET_KEY="${pubKey?.pubKey.trimEnd() ?? ''}"
-      - TRAFFIC_AUDIT_BACKEND_URL="${window.location.origin}"
-      - TRAFFIC_AUDIT_CREDENTIAL="${result.trafficAuditCredential}"
+      - SECRET_KEY=${pubKey?.pubKey.trimEnd() ?? ''}
+      - TRAFFIC_AUDIT_BACKEND_URL=${window.location.origin}
+      - TRAFFIC_AUDIT_CREDENTIAL=${result.trafficAuditCredential}
       - TRAFFIC_AUDIT_FLUSH_INTERVAL_MS=5000
       - TRAFFIC_AUDIT_QUEUE_MAX_SIZE=20000
       - TRAFFIC_AUDIT_REQUEST_TIMEOUT_MS=10000
