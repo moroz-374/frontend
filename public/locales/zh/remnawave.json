@@ -2151,7 +2151,18 @@
         "clear-filters": "清除筛选",
         "loading": "正在加载流量审计记录...",
         "empty": "未找到流量审计记录。",
-        "load-more": "加载更多"
+        "load-more": "加载更多",
+        "original": "原始：{{destination}}",
+        "original-with-source": "原始：{{destination}} · {{source}}",
+        "ip-only": "仅 IP",
+        "no-confirmed-domain": "无确认域名",
+        "sniffed-protocol": {
+            "http": "HTTP Host",
+            "tls": "TLS SNI",
+            "quic": "QUIC SNI",
+            "fakedns": "FakeDNS",
+            "fakedns+others": "FakeDNS + SNI"
+        }
     },
     "traffic-audit-settings": {
         "title": "流量审计规则",

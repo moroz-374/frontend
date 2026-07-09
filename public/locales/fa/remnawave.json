@@ -2151,7 +2151,18 @@
         "clear-filters": "پاک کردن فیلترها",
         "loading": "در حال بارگذاری سوابق ممیزی...",
         "empty": "رکوردی یافت نشد.",
-        "load-more": "بارگذاری بیشتر"
+        "load-more": "بارگذاری بیشتر",
+        "original": "اصلی: {{destination}}",
+        "original-with-source": "اصلی: {{destination}} · {{source}}",
+        "ip-only": "فقط IP",
+        "no-confirmed-domain": "دامنه تأیید نشده",
+        "sniffed-protocol": {
+            "http": "HTTP Host",
+            "tls": "TLS SNI",
+            "quic": "QUIC SNI",
+            "fakedns": "FakeDNS",
+            "fakedns+others": "FakeDNS + SNI"
+        }
     },
     "traffic-audit-settings": {
         "title": "قوانین ممیزی ترافیک",

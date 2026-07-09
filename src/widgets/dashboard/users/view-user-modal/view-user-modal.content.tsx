@@ -1,3 +1,5 @@
+import type { TFunction } from 'i18next'
+
 import {
     Button,
     Card,
@@ -11,17 +13,18 @@ import {
     Switch,
     Table,
     Text,
-    TextInput
+    TextInput,
+    Tooltip
 } from '@mantine/core'
 import { UpdateUserCommand } from '@remnawave/backend-contract'
 import { zodResolver } from 'mantine-form-zod-resolver'
 import { PiFloppyDiskDuotone } from 'react-icons/pi'
+import { useEffect, useMemo, useState } from 'react'
 import { useMediaQuery } from '@mantine/hooks'
 import { useTranslation } from 'react-i18next'
 import { TbDots } from 'react-icons/tb'
 import { useForm } from '@mantine/form'
 import { motion } from 'motion/react'
-import { useEffect, useMemo, useState } from 'react'
 import dayjs from 'dayjs'
 
 import {
@@ -46,13 +49,13 @@ import { ToggleUserStatusButtonFeature } from '@features/ui/dashboard/users/togg
 import { RevokeSubscriptionUserFeature } from '@features/ui/dashboard/users/revoke-subscription-user'
 import { useUserModalStoreActions } from '@entities/dashboard/user-modal-store/user-modal-store'
 import { ResetUsageUserFeature } from '@features/ui/dashboard/users/reset-usage-user'
+import { TrafficLogFilters, TrafficLogItem } from '@shared/api/traffic-audit'
 import { DeleteUserFeature } from '@features/ui/dashboard/users/delete-user'
 import { bytesToGbUtil, gbToBytesUtil } from '@shared/utils/bytes'
 import { LoaderModalShared } from '@shared/ui/loader-modal'
 import { handleFormErrors } from '@shared/utils/misc'
 import { ModalFooter } from '@shared/ui/modal-footer'
 import { queryClient } from '@shared/api'
-import { TrafficLogFilters } from '@shared/api/traffic-audit'
 
 const MotionWrapper = motion.div
 const MotionStack = motion.create(Stack)
@@ -73,6 +76,44 @@ const cardVariants = {
         y: 0,
         transition: { duration: 0.3 }
     }
+}
+
+const getSniffedProtocolLabel = (
+    protocol: TrafficLogItem['sniffedProtocol'],
+    t: TFunction
+) => {
+    if (!protocol) {
+        return null
+    }
+
+    return t(`traffic-audit.sniffed-protocol.${protocol}`)
+}
+
+const getTrafficAuditDestinationHint = (item: TrafficLogItem, t: TFunction) => {
+    const sniffedSource = getSniffedProtocolLabel(item.sniffedProtocol, t)
+
+    if (item.originalDestination && sniffedSource) {
+        return t('traffic-audit.original-with-source', {
+            destination: item.originalDestination,
+            source: sniffedSource
+        })
+    }
+
+    if (item.originalDestination) {
+        return t('traffic-audit.original', {
+            destination: item.originalDestination
+        })
+    }
+
+    if (item.destinationType === 'IPV4' || item.destinationType === 'IPV6') {
+        return t('traffic-audit.ip-only')
+    }
+
+    if (item.destinationType === 'UNKNOWN') {
+        return t('traffic-audit.no-confirmed-domain')
+    }
+
+    return null
 }
 
 interface IProps {
@@ -405,24 +446,49 @@ export const ViewUserModalContent = (props: IProps) => {
                                     </Table.Thead>
 
                                     <Table.Tbody>
-                                        {trafficAuditItems.map((item) => (
-                                            <Table.Tr key={item.id}>
-                                                <Table.Td>
-                                                    {dayjs(item.requestedAt).format(
-                                                        'YYYY-MM-DD HH:mm:ss'
-                                                    )}
-                                                </Table.Td>
-                                                <Table.Td>{item.destination}</Table.Td>
-                                                <Table.Td>{item.destinationType}</Table.Td>
-                                                <Table.Td>
-                                                    {nodes.find(
-                                                        (node) => node.uuid === item.nodeUuid
-                                                    )?.name ?? item.nodeUuid}
-                                                </Table.Td>
-                                                <Table.Td>{item.network}</Table.Td>
-                                                <Table.Td>{item.port}</Table.Td>
-                                            </Table.Tr>
-                                        ))}
+                                        {trafficAuditItems.map((item) => {
+                                            const destinationHint = getTrafficAuditDestinationHint(
+                                                item,
+                                                t
+                                            )
+
+                                            return (
+                                                <Table.Tr key={item.id}>
+                                                    <Table.Td>
+                                                        {dayjs(item.requestedAt).format(
+                                                            'YYYY-MM-DD HH:mm:ss'
+                                                        )}
+                                                    </Table.Td>
+                                                    <Table.Td>
+                                                        <Stack gap={2}>
+                                                            <Text fz="xs">{item.destination}</Text>
+                                                            {destinationHint && (
+                                                                <Tooltip
+                                                                    disabled={
+                                                                        !item.originalDestination
+                                                                    }
+                                                                    label={destinationHint}
+                                                                    multiline
+                                                                    withArrow
+                                                                >
+                                                                    <Text c="dimmed" fz="xs">
+                                                                        {destinationHint}
+                                                                    </Text>
+                                                                </Tooltip>
+                                                            )}
+                                                        </Stack>
+                                                    </Table.Td>
+                                                    <Table.Td>{item.destinationType}</Table.Td>
+                                                    <Table.Td>
+                                                        {nodes.find(
+                                                            (node) => node.uuid === item.nodeUuid
+                                                        )?.name ?? item.nodeUuid}
+                                                    </Table.Td>
+                                                    <Table.Td>{item.network}</Table.Td>
+                                                    <Table.Td>{item.port}</Table.Td>
+                                                </Table.Tr>
+                                            )
+                                        })}
                                     </Table.Tbody>
                                 </Table>
                             )}

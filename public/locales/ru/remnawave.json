@@ -2151,7 +2151,18 @@
         "clear-filters": "Очистить фильтры",
         "loading": "Загрузка журнала аудита...",
         "empty": "Записи аудита не найдены.",
-        "load-more": "Загрузить ещё"
+        "load-more": "Загрузить ещё",
+        "original": "Исходное: {{destination}}",
+        "original-with-source": "Исходное: {{destination}} · {{source}}",
+        "ip-only": "Только IP",
+        "no-confirmed-domain": "Домен не подтверждён",
+        "sniffed-protocol": {
+            "http": "HTTP Host",
+            "tls": "TLS SNI",
+            "quic": "QUIC SNI",
+            "fakedns": "FakeDNS",
+            "fakedns+others": "FakeDNS + SNI"
+        }
     },
     "traffic-audit-settings": {
         "title": "Правила аудита трафика",

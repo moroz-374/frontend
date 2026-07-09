@@ -2151,7 +2151,18 @@
         "clear-filters": "Clear filters",
         "loading": "Loading traffic audit records...",
         "empty": "No traffic audit records found.",
-        "load-more": "Load more"
+        "load-more": "Load more",
+        "original": "Original: {{destination}}",
+        "original-with-source": "Original: {{destination}} · {{source}}",
+        "ip-only": "IP only",
+        "no-confirmed-domain": "No confirmed domain",
+        "sniffed-protocol": {
+            "http": "HTTP Host",
+            "tls": "TLS SNI",
+            "quic": "QUIC SNI",
+            "fakedns": "FakeDNS",
+            "fakedns+others": "FakeDNS + SNI"
+        }
     },
     "traffic-audit-settings": {
         "title": "Traffic audit rules",

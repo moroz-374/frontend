@@ -1,35 +1,38 @@
 import { instance } from '@shared/api'
 
 export interface TrafficLogItem {
-    id: string
     destination: string
     destinationType: 'DOMAIN' | 'IPV4' | 'IPV6' | 'UNKNOWN'
+    id: string
     network: 'tcp' | 'udp'
+    nodeUuid: string
+    originalDestination: null | string
+    originalDestinationType: 'DOMAIN' | 'IPV4' | 'IPV6' | 'UNKNOWN' | null
     port: number
     requestedAt: string
-    nodeUuid: string
+    sniffedProtocol: 'fakedns' | 'fakedns+others' | 'http' | 'quic' | 'tls' | null
 }
 
 export interface TrafficLogPage {
     items: TrafficLogItem[]
-    nextCursor: string | null
+    nextCursor: null | string
 }
 
 export interface TrafficLogFilters {
     destination?: string
-    from?: string
-    to?: string
     destinationType?: TrafficLogItem['destinationType']
-    nodeUuid?: string
+    from?: string
     network?: TrafficLogItem['network']
+    nodeUuid?: string
     port?: number
+    to?: string
 }
 
 export async function updateTrafficAudit(userUuid: string, enabled: boolean) {
     const { data } = await instance.patch<{
         response: {
-            uuid: string
             isAuditEnabled: boolean
+            uuid: string
         }
     }>(`/api/users/${userUuid}/traffic-audit`, {
         enabled
@@ -40,9 +43,9 @@ export async function updateTrafficAudit(userUuid: string, enabled: boolean) {
 
 export async function getTrafficAuditLogs(
     params: TrafficLogFilters & {
-        userUuid: string
         cursor?: string
         limit?: number
+        userUuid: string
     }
 ) {
     const { userUuid, ...query } = params
